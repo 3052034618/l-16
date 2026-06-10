@@ -12,20 +12,28 @@ def cmd_export(args):
         
         export_format = args.format if args.format in ["csv", "json"] else "csv"
         
-        if args.output:
-            output_file = args.output
-        else:
-            output_file = None
+        budget = None
+        if args.budget:
+            try:
+                budget = float(args.budget)
+            except ValueError:
+                print(f"✗ 错误: 预算金额格式不正确: {args.budget}")
+                return 1
+        
+        output_file = args.output if args.output else None
         
         if export_format == "csv":
-            result_path = exporter.export_csv(output_file)
+            result_path = exporter.export_csv(output_file, budget=budget)
         else:
-            result_path = exporter.export_json(output_file)
+            result_path = exporter.export_json(output_file, budget=budget)
         
         print(f"✓ 管理层汇报表已导出: {result_path}")
         
     except FileNotFoundError as e:
-        print(f"✗ 错误: {e}")
+        print(f"✗ 提示: {e}")
+        return 1
+    except ValueError as e:
+        print(f"✗ 提示: {e}")
         return 1
     except Exception as e:
         print(f"✗ 导出失败: {e}")

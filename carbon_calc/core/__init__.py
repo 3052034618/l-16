@@ -33,4 +33,4 @@ class ProjectConfig:
     @staticmethod
     def project_exists(project_dir):
         proj_path = ProjectConfig.get_project_path(project_dir)
-        return proj_path.is_dir() and (proj_path / "baseline.json").exists()
+        return proj_path.is_dir() and (proj_path / "plans.json").exists()

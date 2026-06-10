@@ -11,20 +11,32 @@ def cmd_report(args):
         generator = ReportGenerator(args.project_dir)
         
         output_format = args.format if args.format in ["text", "json"] else "text"
-        report = generator.generate_report(output_format=output_format)
+        budget = None
+        if args.budget:
+            try:
+                budget = float(args.budget)
+            except ValueError:
+                print(f"✗ 错误: 预算金额格式不正确: {args.budget}")
+                return 1
+        
+        report = generator.generate_report(output_format=output_format, budget=budget)
         
         if args.output:
-            if output_format == "json":
-                filename = args.output if args.output.endswith(".json") else args.output + ".json"
-            else:
-                filename = args.output if args.output.endswith(".txt") else args.output + ".txt"
+            filename = args.output
+            if output_format == "json" and not filename.endswith(".json"):
+                filename += ".json"
+            elif output_format == "text" and not filename.endswith(".txt"):
+                filename += ".txt"
             report_path = generator.save_report(report, filename=filename)
             print(f"✓ 报告已保存至: {report_path}")
         else:
             print(report)
         
     except FileNotFoundError as e:
-        print(f"✗ 错误: {e}")
+        print(f"✗ 提示: {e}")
+        return 1
+    except ValueError as e:
+        print(f"✗ 提示: {e}")
         return 1
     except Exception as e:
         print(f"✗ 生成报告失败: {e}")

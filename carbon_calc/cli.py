@@ -9,6 +9,7 @@ from .commands.cmd_calc import cmd_calc
 from .commands.cmd_compare import cmd_compare
 from .commands.cmd_report import cmd_report
 from .commands.cmd_export import cmd_export
+from .commands.cmd_scenario import cmd_scenario
 
 
 def main():
@@ -24,6 +25,7 @@ def main():
   carbon-calc compare --sort-by roi    按ROI排序比较
   carbon-calc report                   生成评估报告
   carbon-calc export                   导出管理层汇报表
+  carbon-calc scenario                 敏感性分析 (三情景对比)
         """
     )
     
@@ -37,6 +39,7 @@ def main():
     _add_compare_parser(subparsers)
     _add_report_parser(subparsers)
     _add_export_parser(subparsers)
+    _add_scenario_parser(subparsers)
     
     args = parser.parse_args()
     
@@ -51,6 +54,7 @@ def main():
         "compare": cmd_compare,
         "report": cmd_report,
         "export": cmd_export,
+        "scenario": cmd_scenario,
     }
     
     handler = cmd_map.get(args.command)
@@ -93,11 +97,12 @@ def _add_compare_parser(subparsers):
 
 
 def _add_report_parser(subparsers):
-    parser = subparsers.add_parser("report", help="生成可读摘要和风险提示")
+    parser = subparsers.add_parser("report", help="生成管理层摘要报告和风险提示")
     parser.add_argument("--project-dir", "-d", default=".", help="项目目录路径 (默认: 当前目录)")
     parser.add_argument("--format", "-f", default="text", choices=["text", "json"],
                         help="报告格式 (默认: text)")
     parser.add_argument("--output", "-o", help="输出文件路径")
+    parser.add_argument("--budget", "-b", help="投资预算约束 (元)，用于推荐组合方案")
 
 
 def _add_export_parser(subparsers):
@@ -106,6 +111,22 @@ def _add_export_parser(subparsers):
     parser.add_argument("--format", "-f", default="csv", choices=["csv", "json"],
                         help="导出格式 (默认: csv)")
     parser.add_argument("--output", "-o", help="输出文件路径")
+    parser.add_argument("--budget", "-b", help="投资预算约束 (元)，用于推荐组合方案")
+
+
+def _add_scenario_parser(subparsers):
+    parser = subparsers.add_parser("scenario", help="敏感性分析 - 乐观/基准/保守三情景对比")
+    parser.add_argument("--project-dir", "-d", default=".", help="项目目录路径 (默认: 当前目录)")
+    parser.add_argument("--plan", "-p", help="指定单个方案进行分析")
+    parser.add_argument("--investment-change", type=float, 
+                        help="投资波动幅度百分比 (如: 10 表示±10%%)")
+    parser.add_argument("--efficiency-change", type=float,
+                        help="节能效率波动幅度百分比 (如: 15 表示±15%%)")
+    parser.add_argument("--price-change", type=float,
+                        help="电价波动幅度百分比 (如: 10 表示±10%%)")
+    parser.add_argument("--carbon-change", type=float,
+                        help="碳排放因子波动幅度百分比 (如: 10 表示±10%%)")
+    parser.add_argument("--save", action="store_true", help="保存分析结果到文件")
 
 
 if __name__ == "__main__":
